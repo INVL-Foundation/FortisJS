@@ -1,0 +1,63 @@
+IOSL (Innovilage Open Source License) v1.0
+
+Preamble
+This license is designed to foster innovation and collaboration while ensuring fair attribution. It provides permissions similar to permissive open source licenses, with additional flexibility for substantially transformed works. For further information, including accompanying explainer materials, FAQs, and compatibility charts, please visit https://invl.org/.
+
+Copyright (c) 2026 Innovilage Technologies
+
+All rights reserved. This software and associated documentation files (the "Software") are the intellectual property of the above copyright holder and are licensed under the following terms:
+
+1. Permission Grant
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The right to sublicense the Software is expressly limited to sublicensing under this same IOSL license, except as provided in Section 4 (Rights for Qualified Derivative Works).
+
+2. Standard Attribution Requirement
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+3. Propagation of License Terms
+When you convey, distribute, or publish the Software, whether modified or unmodified, you must license the work under this IOSL license. You may not impose any additional terms or apply any technical measures that restrict the exercise of the rights granted under this license.
+
+4. Rights for Qualified Derivative Works
+A "Qualified Derivative Work" is defined as a modified version of the Software that satisfies ANY TWO of the following four criteria:
+
+Criterion A: Quantitative Transformation
+The Derivative Work contains at least 60% new Source Lines of Code (SLOC), excluding comments and blank lines, relative to the original Software, as measured by standard code analysis tools.
+
+Criterion B: Independent Development
+The new code constitutes substantial, independent development effort, evidenced by meaningful technical innovation, significant engineering investment, and development spanning a reasonable timeframe.
+
+Criterion C: Substantial Functional Transformation
+The Derivative Work serves a primary purpose substantially different from the original Software, as demonstrated by different core functionality, target user base, or problem domain.
+
+Criterion D: Market Differentiation
+A reasonable user would not consider the Derivative Work a direct market substitute for the original Software.
+
+For Qualified Derivative Works meeting these criteria, the right to sublicense includes the right to sublicense under this same IOSL license with changed authorship attribution.
+
+5. Safe Harbour for De Minimis Use
+The extraction and use of extracts from the Software is deemed insubstantial and is not subject to the terms of this license, provided that such portion, in its original, unmodified form as provided by the creator, meets one of the following criteria:
+(i) It comprises fewer than two hundred (200) source lines of code as measured by any commonly used code-analysis tool, and excluding comments, blank lines, and non-functional formatting;
+(ii) It comprises five (5) or fewer discrete and independent functions.
+
+In cases of ambiguity, such as with minified or compressed code, the function count pursuant to (ii) shall be the determinative measure. Licensees may not manipulate the code's presentation to evade the thresholds set forth herein.
+
+6. Foundational Library Exception
+If the Software is expressly designated by the Copyright Holder as a "Foundational Library", "Foundational Package" or "Reference Source Code" (via a notice in the source code or documentation), the following exception applies:
+
+(i) Integration Permission: You may integrate, link, or combine the Software with a separate work ("Host Program") that is licensed under proprietary terms or different open-source terms. Such integration does not, by itself, require the Host Program to be licensed under the IOSL or its source code to be disclosed.
+
+(ii) Conditions for Exception: This exception is valid only if:
+- The original copyright notice and a copy of this IOSL license are included in the source code of the Host Program or in its accompanying documentation; and
+- The author(s) and the use of the IOSL license are prominently mentioned in the "About" or "Legal" section of the Host Program's user interface (if one exists).
+
+(iii) Preservation of Derivative Works Clause: This exception applies strictly to the integration of the Software. Any modifications, enhancements, or direct derivatives of the Software itself remain subject to the terms of Section 3 (Propagation of License Terms) and Section 4 (Rights for Qualified Derivative Works). The Host Program is not considered a "Qualified Derivative Work" solely by virtue of containing the Software.
+
+7. No Warranty
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+8. Determination and Disputes
+The burden of proving qualification as a Qualified Derivative Work rests with the creator of the derivative work. In case of disputes regarding qualification, parties agree to seek mediation before pursuing litigation.
+
+9. Final Provisions
+This license represents the complete agreement between parties regarding the Software. If any provision is found unenforceable, the remainder shall remain in full effect.
