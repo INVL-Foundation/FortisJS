@@ -209,10 +209,10 @@ function _isBigQValid(value, {
     let F, E;
     if (exp === 0) {
         F = mant;
-        E = -1074;                // subnormal double
+        E = -1074; // Subnormal double
     } else {
         F = (1n << 52n) | mant;
-        E = exp - 1075;           // normal double
+        E = exp - 1075; // Normal double
     }
 
     const EBig = BigInt(E);
@@ -235,17 +235,15 @@ function _isBigQValid(value, {
     if (shiftNormal >= 0) {
         M = F << sBN;
         eBase = EBig - sBN;
-    } else {
-        const mask = (1n << -sBN) - 1n;
-        if ((F & mask) !== 0n) { /* skip to subnormal */ }
-        else {
-            M = F >> -sBN;
-            eBase = EBig - sBN;    // –(–shiftNormal) = +shiftNormal
-        }
+    } else if ((F & ((1n << -sBN) - 1n)) === 0n) {
+        M = F >> -sBN;
+        eBase = EBig - sBN;
     }
+
+    // If not representable as normal (non-zero low bits); fall through to subnormal check
     if (M !== undefined) {
-        const e_biased = Number(eBase) + bias + manBits;
-        if (M >= normMin && M <= normMax && e_biased >= 1 && e_biased <= maxExp) return true;
+        const eb = Number(eBase) + bias + manBits;
+        if (M >= normMin && M <= normMax && eb >= 1 && eb <= maxExp) return true;
     }
 
     // Subnormal numbers
