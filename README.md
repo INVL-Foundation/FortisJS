@@ -1,15 +1,15 @@
-
-# FortisJS - Version 0.9.1
+# FortisJS - Version 0.9.2
 
 **[FOUNDATIONAL LIBRARY]** - as per IOSL licensing requirements.
 
 This is a pure ECMAScript runtime **type-checking** and **parsing** library built by *Innovilage Technologies (INVT)* and published by the Innovilage Foundation (INVL).
 
-Built on the *Unix Philosophy*, this is a low-level, high-performance toolkit designed for developers building AI frameworks, fintech engines, and IoT systems in JS. It prioritizes *composability over configuration*, treating everything as a pure predicate and does **NOT** support automatic bundling nor NPM package managers.
+Built on the *Unix Philosophy*, this is a low-level, high-performance toolkit designed for developers building AI frameworks, fintech engines, and IoT systems in JS. It prioritises *composability over configuration*, treating everything as a pure predicate which does **NOT** support automatic bundling nor NPM package managers.
 
 This is done to protect the users while encouraging independent tree-shaking (for smaller code sizes) as well as code reviews before inclusion into a project.
 
 **NOTE:** While this library is already used in production, it is still in the pre-v1 phase where some parts might need additional scrutiny or caution before use.
+
 ## The Philosophy
 
 *Maximal Flexibility, Minimal Surface Area*
@@ -38,6 +38,7 @@ The only limit to what this library can validate is your ability to build a pipe
 - **ES2026 Support** - Uses the latest ```ES2026``` standard with some* custom fallback protections.
 - **Non-NPM Packaging** - Does not support NPM to encourage code vetting, manual integration, and prevent supply chain attacks.
 - **System Uniformity** - It allows you to achieve *full-stack type symmetry*: from frontend input checks to backend type validation to database schema.
+
 ## Deployment
 
 This project is split into composable modules. The core file that is needed is `core/is.js`, while everything else is based on this file and add additional functionalities to the core logic.
@@ -170,6 +171,7 @@ const secureNullableString = or(
     _is.safeString
 );
 ```
+
 ## Extensibility Vectors
 
 Following our above-mentioned monadic composition examples, we can further extend the basic functionality of this library through the different module subsystems.
@@ -190,8 +192,8 @@ const mySchema = {
         async: (v) => db.emails.isUnique(v),
     },
     
-    // Cross-field validation (requires is-schema.js module)
-    password: (v, data) => v !== data.username,
+    // Cross-field validation
+    password: _isWeb.match(data.pwd, data.confirm),
 };
 ```
 
@@ -268,6 +270,7 @@ const validateGPUBuffer = (buffer, format) => {
     return view.every(val => _isQuant[format](val));
 };
 ```
+
 ## FAQ
 
 #### Is this library production-ready?
