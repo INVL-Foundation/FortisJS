@@ -26,6 +26,14 @@ const _arrayTags = new Map([
     [Float64Array, '[object Float64Array]'],           // -1.8e308 to 1.8e308 (8 bytes)
 ]);
 
+// Banker's rounding; round half to even
+const _roundBigInt = (b, roundDigit, restStr, negative) => {
+    const isExactHalf = roundDigit === 5 && /^0*$/.test(restStr);
+    if (isExactHalf) { if (b % 2n !== 0n) b += (negative ? -1n : 1n) }
+    else if (roundDigit > 5) { b += (negative ? -1n : 1n) }
+    return b;
+};
+
 function _toMultiInt(TNum, v) {
     // DEBUG ONLY: Handle empty/whitespace-only strings
     // if (typeof v === 'string' && v.trim() === '') return 0;
@@ -41,17 +49,42 @@ function _toMultiInt(TNum, v) {
                 
                 // Handle scientific notation (1e3, 1.5e10)
                 if (/[eE]/.test(s)) {
-                    b = Number(s); // Convert to num first
-                    if (!Number.isFinite(b)) throw new TypeError(`Invalid BigInt: could not parse input "${s}"`);
-                    b = BigInt(Math.round(b));
+                    const [mantissa, exp] = s.split(/[eE]/);
+                    const e = parseInt(exp, 10);
+                    const negative = mantissa.startsWith('-');
+
+                    if (mantissa.includes('.')) {
+                        const [intPart, fracPart] = mantissa.split('.');
+                        const digits = intPart + fracPart;
+                        const shift = e - fracPart.length;
+                        if (shift >= 0) {
+                            b = BigInt(digits) * (10n ** BigInt(shift));
+                        } else {
+                            const keep = digits.length + shift;
+                            const roundDigit = digits.charCodeAt(keep) - 48;
+                            b = BigInt(digits.slice(0, keep));
+                            b = _roundBigInt(b, roundDigit, digits.slice(keep + 1), negative);
+                        }
+                    } else {
+                        if (e >= 0) {
+                            b = BigInt(mantissa) * (10n ** BigInt(e));
+                        } else {
+                            const abs = mantissa.replace('-', '');
+                            const roundPos = -e - 1;
+                            const roundDigit = roundPos < abs.length ? abs.charCodeAt(roundPos) - 48 : 0;
+                            const restStr = roundPos + 1 < abs.length ? abs.slice(roundPos + 1) : '';
+                            b = 0n;
+                            b = _roundBigInt(b, roundDigit, restStr, negative);
+                        }
+                    }
                 } else if (s.includes('.')) {
-                    // Handle decimals with high-precision rounding
                     const [intPart, fracPart] = s.split('.');
                     const negative = intPart.startsWith('-');
-                    b = BigInt(intPart || '0');
-                    // Check first decimal digit for rounding (ASCII '5' is 53)
-                    if (fracPart && fracPart.charCodeAt(0) >= 53) {
-                        b += (negative ? -1n : 1n);
+                    const safeInt = (intPart === '-' || intPart === '') ? '0' : intPart;
+                    b = BigInt(safeInt);
+                    if (fracPart) {
+                        const firstDigit = fracPart.charCodeAt(0) - 48;
+                        b = _roundBigInt(b, firstDigit, fracPart.slice(1), negative);
                     }
                 } else {
                     // Handle Hex (0xff), Binary (0b), Octal (0o), and Integers
@@ -99,10 +132,19 @@ function _smartArray(TArray, v, offset = 0, littleEndian = true) {
     const tArrType = _getTag(v);
     if (tArrType === _arrayTags.get(TArray)) return v;
 
+    // ArrayBuffer pass through
+    if (TArray === ArrayBuffer) {
+        if (v instanceof ArrayBuffer) return v;
+        if (ArrayBuffer.isView(v)) return v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength);
+        if (typeof v === 'string') return new TextEncoder().encode(v).buffer;
+        if (Array.isArray(v)) return new Uint8Array(v.map(Number)).buffer;
+        return new ArrayBuffer(0);
+    }
+
     // Array input
     if (Array.isArray(v)) {
         const out = new TArray(v.length);
-        const isBig = (tArrType === '[object BigInt64Array]' || tArrType === '[object BigUint64Array]');
+        const isBig = TArray === BigInt64Array || TArray === BigUint64Array;
         
         for (let i = 0; i < v.length; i++) {
             let item = v[i];
@@ -264,7 +306,7 @@ const _parse = {};
 const _linkedParserFns = Object.keys(_configs).filter(type => typeof _is[type] === 'function');
 
 _linkedParserFns.forEach(type => {
-    _parse[type] = (input, coerce = false, asObject = false, customErr = '') => {
+    _parse[type] = (input, coerce = false, asObject = false, customErr = '', debug = false) => {
         // Core variables
         const [tryInto, fallback] = _configs[type];
         let isValid = _is[type](input), isErr = false, output = null, errMsg = '';
@@ -300,7 +342,7 @@ _linkedParserFns.forEach(type => {
                     result: output
                 };
             } else {
-                if (isErr) console.warn(errMsg); // May cause performance degradation if called excessively
+                if (isErr && debug) console.warn(errMsg); // May cause performance degradation if called excessively
                 return output;
             }
         }
