@@ -4,13 +4,13 @@
 This module provides the `_is` function and is the basis for the entire library. It handles precise validation for primitives, complex objects, binary data, and modern JavaScript features while accounting for floating-point inaccuracies and memory-safe integer checks.
 
 ## Table of Contents
-1. [Core Primitives](##core-primitives)
-1. [Numbers & Fixed-Width Integers](##numbers-&-fixed-width-integers)
-1. [Collections & Objects](##collections-&-objects)
-1. [Async & Logic](##async-&-logic)
-1. [TypedArrays & Binary](##typedarrays-&-binary)
-1. [Web & DOM](##web-&-dom)
-1. [Utilities](##utilities)
+1. [Core Primitives](#core-primitives)
+2. [Numbers & Fixed-Width Integers](#numbers-&-fixed-width-integers)
+3. [Collections & Objects](#collections-&-objects)
+4. [Async & Logic](#async-&-logic)
+5. [TypedArrays & Binary](#typedarrays-&-binary)
+6. [Web & DOM](#web-&-dom)
+7. [Utilities](#utilities)
 
 ## Core Primitives
 Functions for fundamental JavaScript data types.

@@ -4,10 +4,10 @@
 This module provides the `_isQuant` range of functions, and is a specialised extension of the library designed for high-performance AI and machine learning applications. It focuses on quantisation - the process of representing numbers with lower precision to save memory and increase processing speeds.
 
 ## Table of Contents
-1. [Quantised Integers](##quantised-integers)
-1. [Small Float Formats (<8-bit)](##small-float-formats-(<-8-bit))
-1. [Standard AI Formats (8-bit to 32-bit)](##standard-ai-formats-(8-bit-to-32-bit))
-1. [Custom Format Validation](##custom-format-validation)
+1. [Quantised Integers](#quantised-integers)
+2. [Small Float Formats (<8-bit)](#small-float-formats-8-bit)
+3. [Standard AI Formats (8-bit to 32-bit)](#standard-ai-formats-8-bit-to-32-bit)
+4. [Custom Format Validation](#custom-format-validation)
 
 ## Quantised Integers
 Fast bit-shifting checks to ensure an integer fits within specific bit-widths.
