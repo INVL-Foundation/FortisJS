@@ -5,11 +5,11 @@ This module provides the `_is` function and is the basis for the entire library.
 
 ## Table of Contents
 1. [Core Primitives](#core-primitives)
-2. [Numbers & Fixed-Width Integers](#numbers-&-fixed-width-integers)
-3. [Collections & Objects](#collections-&-objects)
-4. [Async & Logic](#async-&-logic)
-5. [TypedArrays & Binary](#typedarrays-&-binary)
-6. [Web & DOM](#web-&-dom)
+2. [Numbers & Fixed-Width Integers](#numbers-fixed-width-integers)
+3. [Collections & Objects](#collections-objects)
+4. [Async & Logic](#async-logic)
+5. [TypedArrays & Binary](#typedarrays-binary)
+6. [Web & DOM](#web-dom)
 7. [Utilities](#utilities)
 
 ## Core Primitives
