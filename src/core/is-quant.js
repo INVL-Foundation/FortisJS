@@ -174,8 +174,7 @@ const _isQuant_LUT = {
     FP6_E2M3: _genLUTSmallMeta(_genLUTSmall(6, 2, 3, 1, true, true, false), 3),
     FP8_E5M2: _genLUTSmallMeta(_genLUTSmall(8, 5, 2, 15, true, true, false), 2),
 
-    // OCP / MX Compliant (No Inf, single NaN, max exponent is normal)
-    // OCP E4M3/E5M2 hasNaN = true, because it still has one NaN pattern
+    // OCP / MX compliant
     FP5_E2M2: _genLUTSmallMeta(_genLUTSmall(5, 2, 2, 1, true, false, true), 2), 
     FP5_E4M0: _genLUTSmallMeta(_genLUTSmall(5, 4, 0, 7, true, false, true), 0),
     FP6_E3M2: _genLUTSmallMeta(_genLUTSmall(6, 3, 2, 3, true, false, true), 2),
