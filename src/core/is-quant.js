@@ -66,11 +66,12 @@ function _genNF4LUT() {
  * @param {number} expBits - Number of exponent bits
  * @param {number} manBits - Number of mantissa bits
  * @param {number} bias - Exponent bias
+ * @param {boolean} hasNaN - Whether format supports NaN
  * @param {boolean} infinitySupported - Whether format supports infinity
  * @param {boolean} ocpMode - OCP/MX specification, e.g., E4M3 (default = false)
  * @returns {Float32Array} Lookup table mapping integer representation to float32
  */
-function _genLUTSmall(width, expBits, manBits, bias, infinitySupported, ocpMode = false) {
+function _genLUTSmall(width, expBits, manBits, bias, hasNaN, infinitySupported, ocpMode = false) {
     const numValues = 1 << width;
     const lut = new Float32Array(numValues);
 
@@ -91,7 +92,7 @@ function _genLUTSmall(width, expBits, manBits, bias, infinitySupported, ocpMode 
         if (ocpMode && exp === maxExp) {
             // OCP E4M3 logic: exp=15 is a normal number unless man=max
             if (man === manMask) {
-                lut[i] = NaN;
+                lut[i] = hasNaN ? NaN : (sign * POW2[exp] * (1 + man * invManDivisor));
             } else {
                 // Formula for normals: sign * 2^(exp-bias) * (1 + man/2^manBits)
                 lut[i] = sign * POW2[exp] * (1 + man * invManDivisor);
@@ -101,7 +102,8 @@ function _genLUTSmall(width, expBits, manBits, bias, infinitySupported, ocpMode 
             if (infinitySupported && man === 0) {
                 lut[i] = sign * Infinity;
             } else {
-                lut[i] = NaN; // All other max‑exp patterns are NaN
+                // If hasNaN is false, treat this as normal number (extended range)
+                lut[i] = hasNaN ? NaN : (sign * POW2[exp] * (1 + man * invManDivisor));
             }
         } else if (exp === 0) {
             // Subnormal numbers (exp is 0)
@@ -112,6 +114,7 @@ function _genLUTSmall(width, expBits, manBits, bias, infinitySupported, ocpMode 
             lut[i] = sign * POW2[exp] * (1 + man * invManDivisor);
         }
     }
+
     return lut;
 }
 
@@ -163,18 +166,23 @@ function _genLUTSmallMeta(table, manBits) {
 const _isQuant_LUT = {
     // Special hardcoded table as per QLoRA
     NF4: _genNF4LUT(),
-    FP4_E2M1: _genLUTSmallMeta(_genLUTSmall(4, 2, 1, 1, true), 1),  // Inf at exp=3, mant=0
-    FP4_E3M0: _genLUTSmallMeta(_genLUTSmall(4, 3, 0, 3, true), 0),  // All‑ones exponent becomes Inf (no mantissa bits)
-    FP5_E2M2: _genLUTSmallMeta(_genLUTSmall(5, 2, 2, 1, false, true), 2), // OCP-compliant (no Inf)
-    FP5_E3M1: _genLUTSmallMeta(_genLUTSmall(5, 3, 1, 3, true), 1),        // Standard IEEE-style
-    FP5_E4M0: _genLUTSmallMeta(_genLUTSmall(5, 4, 0, 7, false, true), 0), // OCP-compliant (no Inf)
-    FP6_E2M3: _genLUTSmallMeta(_genLUTSmall(6, 2, 3, 1, true), 3),        // Typical minifloat with Inf
-    FP6_E3M2: _genLUTSmallMeta(_genLUTSmall(6, 3, 2, 3, false, true), 2), // OCP-compliant (no Inf)
-    FP7_E2M4: _genLUTSmallMeta(_genLUTSmall(7, 2, 4, 1, false, true), 4), // OCP-compliant (no Inf)
-    FP7_E3M3: _genLUTSmallMeta(_genLUTSmall(7, 3, 3, 3, false, true), 3), // OCP-compliant (no Inf)
-    FP7_E4M2: _genLUTSmallMeta(_genLUTSmall(7, 4, 2, 7, false, true), 2), // OCP-compliant (no Inf)
-    FP8_E4M3: _genLUTSmallMeta(_genLUTSmall(8, 4, 3, 7, false, true), 3), // OCP-compliant (no Inf)
-    FP8_E5M2: _genLUTSmallMeta(_genLUTSmall(8, 5, 2, 15, true), 2)        // Standard IEEE-style
+
+    // Standard IEEE-style (Inf and NaN supported)
+    FP4_E2M1: _genLUTSmallMeta(_genLUTSmall(4, 2, 1, 1, true, true, false), 1), 
+    FP4_E3M0: _genLUTSmallMeta(_genLUTSmall(4, 3, 0, 3, true, true, false), 0),
+    FP5_E3M1: _genLUTSmallMeta(_genLUTSmall(5, 3, 1, 3, true, true, false), 1),
+    FP6_E2M3: _genLUTSmallMeta(_genLUTSmall(6, 2, 3, 1, true, true, false), 3),
+    FP8_E5M2: _genLUTSmallMeta(_genLUTSmall(8, 5, 2, 15, true, true, false), 2),
+
+    // OCP / MX Compliant (No Inf, single NaN, max exponent is normal)
+    // OCP E4M3/E5M2 hasNaN = true, because it still has one NaN pattern
+    FP5_E2M2: _genLUTSmallMeta(_genLUTSmall(5, 2, 2, 1, true, false, true), 2), 
+    FP5_E4M0: _genLUTSmallMeta(_genLUTSmall(5, 4, 0, 7, true, false, true), 0),
+    FP6_E3M2: _genLUTSmallMeta(_genLUTSmall(6, 3, 2, 3, true, false, true), 2),
+    FP7_E2M4: _genLUTSmallMeta(_genLUTSmall(7, 2, 4, 1, true, false, true), 4),
+    FP7_E3M3: _genLUTSmallMeta(_genLUTSmall(7, 3, 3, 3, true, false, true), 3),
+    FP7_E4M2: _genLUTSmallMeta(_genLUTSmall(7, 4, 2, 7, true, false, true), 2),
+    FP8_E4M3: _genLUTSmallMeta(_genLUTSmall(8, 4, 3, 7, true, false, true), 3),
 };
 
 /**
