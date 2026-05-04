@@ -47,7 +47,7 @@ Checks for the industry-standard formats used by NVIDIA, Google (TPU), and ARM h
 ## Custom Format Validation
 The library exposes internal logic to check any arbitrary floating-point configuration.
 
-**`_genLUTSmall(width, expBits, manBits, bias, infinitySupported, ocpMode)`** Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is the engine behind the high-speed `f4` through `f8` checks.
+**`_genLUTSmall(width, expBits, manBits, bias, hasNaN, infinitySupported, ocpMode)`** Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is the engine behind the high-speed `f4` through `f8` checks.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
@@ -55,7 +55,8 @@ The library exposes internal logic to check any arbitrary floating-point configu
 | `expBits` | `number` | Width of the exponent field. |
 | `manBits` | `number` | Width of the mantissa field. |
 | `bias` | `number` | The exponent bias value. |
-| `infinitySupported` | `boolean` | If `true`, reserves bit patterns for Infinity/NaN. |
+| `hasNaN` | `boolean` | If `true`, reserves bit patterns for NaN values. |
+| `infinitySupported` | `boolean` | If `true`, reserves bit patterns for Infinity. |
 | `ocpMode` | `boolean` | If `true`, follows OCP/MX logic (E4M3) where max exponent is used for normal numbers unless the mantissa is also maxed. |
 
 **`_isBigQValid(value, config)`**
