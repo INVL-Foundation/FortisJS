@@ -61,34 +61,47 @@ function _parseSmallQ(input, meta) {
 
 /**
  * @param {string|number|bigint} value - The value to parse
- * @param {Object} quantFormat - The bit-level configuration of target quantisation
- * @param {number} quantFormat.expBits - Number of bits allocated to the exponent
- * @param {number} quantFormat.manBits - Number of bits allocated to the mantissa (fraction)
- * @param {number} [quantFormat.bias] - The exponent bias (defaults to IEEE 754 standard: (2^(expBits - 1)) - 1)
- * @param {boolean} [quantFormat.infinitySupported] - Should target format support Infinity and NaN (defaults to true)
+ * @param {Object} format - The bit-level configuration of target quantisation
+ * @param {number} format.expBits - Number of bits allocated to the exponent
+ * @param {number} format.manBits - Number of bits allocated to the mantissa (fraction)
+ * @param {number} [format.bias] - The exponent bias (defaults to IEEE 754 standard: (2^(expBits - 1)) - 1)
+ * @param {string} [format.mode='ieee'] - How special values are encoded:
+ *   - 'ieee'     : all-ones exp + zero mantissa = Inf, non-zero mantissa = NaN
+ *   - 'nan_only' : all-ones exp = NaN in all patterns, Infinity saturates to maxFinite
+ *   - 'separate' : all-ones exp = NaN, (all-ones - 1) exp = Inf
+ *   - 'none'     : no special values; Infinity and NaN both saturate to maxFinite
  */
 function _parseBigQ(value, {
     expBits,
     manBits,
     bias = (1 << (expBits - 1)) - 1,
-    infinitySupported = true
+    mode = 'ieee'
 }) {
-    // Handle special IEEE-754 values
     const num = Number(value);
+
+    // Zeroes, NaN & Infinity
+    if (num === 0) return num; // Preserves -0
     if (Number.isNaN(num)) return NaN;
-    if (!isFinite(num) || num === 0) {
-        if (num === 0) return num;
-        // Infinity handling
-        if (infinitySupported) return num; // ±Infinity preserved
+
+    if (!isFinite(num)) {
+        // Determine is Infinity is representable in current format
+        const infSupported = mode === 'ieee' || mode === 'separate';
+        if (infSupported) return num; // ±Inf preserved
+        // Saturate to ±maxFinite for `nan_only` and `none`
         const maxf = _isQuant_maxFinite(expBits, manBits, bias);
-        return num > 0 ? maxf : -maxf; // Saturation
+        return num > 0 ? maxf : -maxf;
     }
 
-    // Extract double-precision components
+    // Determine max usable biased exponent
+    const maxBiased = mode === 'separate'
+        ? (1 << expBits) - 3
+        : (1 << expBits) - 2;
+
+    // Decompose abs(value) from IEEE 754 double representation
     const absVal = num < 0 ? -num : num;
     _isQuant_largeView.setFloat64(0, absVal, true);
-    const lo = _isQuant_largeView.getUint32(0, true);
-    const hi = _isQuant_largeView.getUint32(4, true);
+    const lo   = _isQuant_largeView.getUint32(0, true);
+    const hi   = _isQuant_largeView.getUint32(4, true);
     const bits = (BigInt(hi) << 32n) | BigInt(lo);
 
     const expRaw = Number((bits >> 52n) & 0x7ffn);
@@ -102,31 +115,34 @@ function _parseBigQ(value, {
     const mBits = BigInt(manBits);
     const L     = _isQuant_bitLength(F);
 
+    // Significand range for normal numbers in the target format
+    const normMin   = 1n << mBits;
+    const normMax   = (1n << (mBits + 1n)) - 1n;
+    const overflowM = 1n << (mBits + 1n); // carry out of mantissa field
+
     // Normal numbers
-    const normMin    = 1n << mBits;
-    const normMax    = (1n << (mBits + 1n)) - 1n;
-    const maxBiased  = (1 << expBits) - 2;
+    const shiftNorm = manBits + 1 - L;
+    let M_norm      = _isQuant_roundShift(F, shiftNorm);
+    let eBaseNorm   = E - shiftNorm;
 
-    const shiftNorm  = manBits + 1 - L;
-    let M_norm       = _isQuant_roundShift(F, shiftNorm);
-    let eBaseNorm    = E - shiftNorm;
+    // Absorb any rounding carry: if M overflowed manBits+1, shift right once
+    while (M_norm >= overflowM) { M_norm >>= 1n; eBaseNorm += 1; }
 
-    // Renormalise until mantissa is in [normMin, normMax] or exponent dies
-    // Overflow carry
-    while (M_norm >= (1n << (mBits + 1n))) { M_norm >>= 1n; eBaseNorm += 1 }
-    while (M_norm < normMin && eBaseNorm + bias + manBits > 0) { M_norm <<= 1n; eBaseNorm -= 1 }
+    // If rounding pushed below normMin, nudge exponent down to compensate
+    while (M_norm < normMin && eBaseNorm + bias + manBits > 0) { M_norm <<= 1n; eBaseNorm -= 1; }
 
     const eBiasedNorm = eBaseNorm + bias + manBits;
+
     if (eBiasedNorm >= 1 && eBiasedNorm <= maxBiased && M_norm >= normMin) return sign * Number(M_norm) * 2 ** eBaseNorm;
-    if (eBiasedNorm > maxBiased) return sign * _isQuant_maxFinite(expBits, manBits, bias);
+    if (eBiasedNorm > maxBiased) return sign * _isQuant_maxFinite(expBits, manBits, bias); // Saturate to maxFinite to prevent exponent overflow into reserved bits (for `ieee`, `nan_only`, `separate`)
 
     // Subnormals / underflows
     const targetExpMin = 1 - bias - manBits;
     const shiftSub     = E - targetExpMin;
     const M_sub        = _isQuant_roundShift(F, shiftSub);
-    const subMax       = (1n << mBits) - 1n;
+    const subMax       = normMin - 1n; // (1 << manBits) - 1
 
-    if (M_sub > subMax) return sign * Number(1n << mBits) * 2 ** targetExpMin;
+    if (M_sub > subMax) return sign * Number(normMin) * 2 ** targetExpMin;
     if (M_sub === 0n) return sign * 0;
     return sign * Number(M_sub) * 2 ** targetExpMin;
 }
@@ -145,8 +161,8 @@ const _parseQuant = Object.freeze({
     f7_E4M2:   (v) => _parseSmallQ(v, _isQuant_LUT.FP7_E4M2),
     f8_E4M3:   (v) => _parseSmallQ(v, _isQuant_LUT.FP8_E4M3),
     f8_E5M2:   (v) => _parseSmallQ(v, _isQuant_LUT.FP8_E5M2),
-    bf16:      (v) => _parseBigQ(v, { expBits: 8, manBits: 7, bias: 127 }),
-    f16_IEEE:  (v) => _parseBigQ(v, { expBits: 5, manBits: 10, bias: 15 }),
-    f32_IEEE:  (v) => _parseBigQ(v, { expBits: 8, manBits: 23, bias: 127 }),
-    tf32:      (v) => _parseBigQ(v, { expBits: 8, manBits: 10, bias: 127 }),
+    bf16:     (v) => _parseBigQ(v, { expBits: 8, manBits: 7,  bias: 127, mode: 'ieee' }),
+    f16_IEEE: (v) => _parseBigQ(v, { expBits: 5, manBits: 10, bias: 15,  mode: 'ieee' }),
+    f32_IEEE: (v) => _parseBigQ(v, { expBits: 8, manBits: 23, bias: 127, mode: 'ieee' }),
+    tf32:     (v) => _parseBigQ(v, { expBits: 8, manBits: 10, bias: 127, mode: 'ieee' }),
 });
