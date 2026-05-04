@@ -5,7 +5,7 @@ This module provides the `_isQuant` range of functions, and is a specialised ext
 
 ## Table of Contents
 1. [Quantised Integers](#quantised-integers)
-2. [Small Float Formats (<8-bit)](#small-float-formats-8-bit)
+2. [Small Float Formats (<8-bit)](#small-float-formats-<-8-bit)
 3. [Standard AI Formats (8-bit to 32-bit)](#standard-ai-formats-8-bit-to-32-bit)
 4. [Custom Format Validation](#custom-format-validation)
 
@@ -58,8 +58,8 @@ Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is th
 | `bias` | `number` | The exponent bias value. |
 | `mode` | `string` | NaN & Infinity encoding logic for the generated LUT format: `'ieee'`, `'nan_only'`, `'separate'`, `'none'`, or `'ocp'`. |
 
-**`_isBigQValid(value, config)`**  
-Validates if a number is representable in a format defined by custom bit allocations using `BigInt` precision. Ideal for formats >16 bits (like `bf16` or `tf32`) where a LUT would be memory-prohibitive.
+**`_isBigQValid(value, format)`**  
+Validates if a number is representable in a format defined by custom bit allocations using `BigInt` precision. Ideal for formats >16 bits (like `bf16` or `tf32`) where a LUT would be memory-prohibitive. `value` is the input numeric value to be checked, and `format` is the config descriptor with the following available options:
 
 - **`expBits`**: Number of bits for the exponent (controls range).
 - **`manBits`**: Number of bits for the mantissa (controls precision).
