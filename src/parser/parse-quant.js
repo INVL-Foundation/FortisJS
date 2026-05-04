@@ -161,8 +161,8 @@ const _parseQuant = Object.freeze({
     f7_E4M2:   (v) => _parseSmallQ(v, _isQuant_LUT.FP7_E4M2),
     f8_E4M3:   (v) => _parseSmallQ(v, _isQuant_LUT.FP8_E4M3),
     f8_E5M2:   (v) => _parseSmallQ(v, _isQuant_LUT.FP8_E5M2),
-    bf16:     (v) => _parseBigQ(v, { expBits: 8, manBits: 7,  bias: 127, mode: 'ieee' }),
-    f16_IEEE: (v) => _parseBigQ(v, { expBits: 5, manBits: 10, bias: 15,  mode: 'ieee' }),
-    f32_IEEE: (v) => _parseBigQ(v, { expBits: 8, manBits: 23, bias: 127, mode: 'ieee' }),
-    tf32:     (v) => _parseBigQ(v, { expBits: 8, manBits: 10, bias: 127, mode: 'ieee' }),
+    bf16:      (v) => _parseBigQ(v, { expBits: 8, manBits: 7,  bias: 127, mode: 'ieee' }),
+    f16_IEEE:  (v) => _parseBigQ(v, { expBits: 5, manBits: 10, bias: 15,  mode: 'ieee' }),
+    f32_IEEE:  (v) => _parseBigQ(v, { expBits: 8, manBits: 23, bias: 127, mode: 'ieee' }),
+    tf32:      (v) => _parseBigQ(v, { expBits: 8, manBits: 10, bias: 127, mode: 'ieee' }),
 });
