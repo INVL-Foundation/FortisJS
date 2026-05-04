@@ -47,7 +47,8 @@ Checks for the industry-standard formats used by NVIDIA, Google (TPU), and ARM h
 ## Custom Format Validation
 The library exposes internal logic to check any arbitrary floating-point configuration.
 
-**`_genLUTSmall(width, expBits, manBits, bias, hasNaN, infinitySupported, ocpMode)`** Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is the engine behind the high-speed `f4` through `f8` checks.
+### **`_genLUTSmall(width, expBits, manBits, bias, specialMode)`**
+Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is the engine behind the high-speed `f4` through `f8` checks.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
@@ -55,16 +56,15 @@ The library exposes internal logic to check any arbitrary floating-point configu
 | `expBits` | `number` | Width of the exponent field. |
 | `manBits` | `number` | Width of the mantissa field. |
 | `bias` | `number` | The exponent bias value. |
-| `hasNaN` | `boolean` | If `true`, reserves bit patterns for NaN values. |
-| `infinitySupported` | `boolean` | If `true`, reserves bit patterns for Infinity. |
-| `ocpMode` | `boolean` | If `true`, follows OCP/MX logic (E4M3) where max exponent is used for normal numbers unless the mantissa is also maxed. |
+| `mode` | `string` | NaN & Infinity encoding logic for the generated LUT format: `'ieee'`, `'nan_only'`, `'separate'`, `'none'`, or `'ocp'`. |
 
-**`_isBigQValid(value, config)`**
-Validates if a number is representable in a format defined by custom bit allocations.
-- `expBits`: The number of bits for the exponent (controls the range).
-- `manBits`: The number of bits for the mantissa (controls the precision).
-- `bias`: The exponent offset.
-- `infinitySupported`: Whether the format reserves bit patterns for `NaN` or `Infinity`.
+**`_isBigQValid(value, config)`**  
+Validates if a number is representable in a format defined by custom bit allocations using `BigInt` precision. Ideal for formats >16 bits (like `bf16` or `tf32`) where a LUT would be memory-prohibitive.
+
+- **`expBits`**: Number of bits for the exponent (controls range).
+- **`manBits`**: Number of bits for the mantissa (controls precision).
+- **`bias`**: The exponent offset (defaults to IEEE standard $2^{expBits-1} - 1$).
+- **`mode`**: How the function handles specific bit patterns for `NaN` or `Infinity`. Possible options are `ieee`, `nan_only`, `separate`, and `none`.
 
 ## Internal Performance Optimisations
 To ensure these checks don't slow down AI inference pipelines, the script utilises:
