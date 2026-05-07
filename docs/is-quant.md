@@ -47,7 +47,7 @@ Checks for the industry-standard formats used by NVIDIA, Google (TPU), and ARM h
 ## Custom Format Validation
 The library exposes internal logic to check any arbitrary floating-point configuration.
 
-### **`_genLUTSmall(width, expBits, manBits, bias, specialMode)`**
+### **`_genLUTSmall(width, expBits, manBits, bias, mode)`**
 Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is the engine behind the high-speed `f4` through `f8` checks.
 
 | Parameter | Type | Description |

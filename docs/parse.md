@@ -33,7 +33,7 @@ The `_configs` object defines how each type is handled during coercion:
 | Category | Supported Types |
 | :--- | :--- |
 | **Primitives** | `string`, `number`, `float`, `bool`, `symbol`, `null`, `undefined` |
-| **Functions** | `fn`, `arrowFn` |
+| **Functions** | `fn`, `likeArrowFn` |
 | **Integers** | `int`, `i8`, `i16`, `i32`, `i64`, `i128`, `u8`, `u16`, `u32`, `u64`, `u128`, `bigInt`, `safeInt` |
 | **Buffers** | `arrayBuffer`, `i8Array`, `i16Array`, `i32Array`, `i64Array`, `u8Array`, `u8ClampedArray`, `u16Array`, `u32Array`, `u64Array`, `f16Array`, `f32Array`, `f64Array` |
 | **Objects** | `date`, `url`, `obj` |
