@@ -5,7 +5,7 @@ This module provides the `_isQuant` range of functions, and is a specialised ext
 
 ## Table of Contents
 1. [Quantised Integers](#quantised-integers)
-2. [Small Float Formats (<8-bit)](#small-float-formats-<-8-bit)
+2. [Small Float Formats (<8-bit)](#small-float-formats-8-bit)
 3. [Standard AI Formats (8-bit to 32-bit)](#standard-ai-formats-8-bit-to-32-bit)
 4. [Custom Format Validation](#custom-format-validation)
 
@@ -20,7 +20,7 @@ Fast bit-shifting checks to ensure an integer fits within specific bit-widths.
 | `q16(v)` | **16-bit Signed**: Validates integers from -32,768 to 32,767. |
 | `q32(v)` | **32-bit Signed**: Alias for standard `i32` validation. |
 
-## Small Float Formats (< 8-bit)
+## Small Float Formats (<8-bit)
 These formats are commonly used in cutting-edge model compression (like QLoRA), and use pre-calculated Lookup Tables (LUTs) for `O(1)` validation speed.
 
 | Function | Description |
@@ -56,19 +56,19 @@ Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is th
 | `expBits` | `number` | Width of the exponent field (controls range). |
 | `manBits` | `number` | Width of the mantissa field (controls precision). |
 | `bias` | `number` | The exponent bias value. |
-| `mode` | `string` | `NaN` & `Infinity` encoding logic for the generated LUT format: `'ieee'`, `'nan_only'`, `'separate'`, `'none'`, or `'ocp'`. |
+| `mode` | `string` | Handles `NaN` & `Infinity` encoding logic for the generated LUT format: `'ieee'`, `'nan_only'`, `'separate'`, `'none'`, or `'ocp'`. Defaults to `ieee`. |
 
 #### **`_isBigQValid(value, format)`**  
 Validates if a number is representable in a format defined by custom bit allocations using `BigInt` precision. Ideal for formats >16 bits (like `bf16` or `tf32`) where a LUT would be memory-prohibitive.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
-| `value` | `number \| bigint` | Input numeric value to be checked. |
+| `value` | `number` / `bigint` | Input numeric value to be checked. |
 | `format` | `Object` | Config descriptor for the quantisation format. |
 | `format.expBits` | `number` | Number of bits for the exponent (controls range). |
 | `format.manBits` | `number` | Number of bits for the mantissa (controls precision). |
 | `format.bias` | `number` | The exponent offset (defaults to IEEE standard $2^{expBits-1} - 1$). |
-| `format.mode` | `string` | How the function handles specific bit patterns for `NaN` or `Infinity`. Possible options are `ieee`, `nan_only`, `separate`, and `none`. |
+| `format.mode` | `string` | How the function handles specific bit patterns for `NaN` or `Infinity`. Possible options are `ieee`, `nan_only`, `separate`, and `none`. Defaults to `ieee`. |
 
 ## Internal Performance Optimisations
 To ensure these checks don't slow down AI inference pipelines, the script utilises:
