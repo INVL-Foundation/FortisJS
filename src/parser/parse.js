@@ -261,7 +261,7 @@ const _configs = Object.freeze({
             return Boolean(v);
         }, false],
     fn:        [(v) => (_is.fn(v) ? v : function() {}), function() {}],
-    arrowFn:   [(v) => (_is.arrowFn(v) ? v : () => {}), () => {}],
+    likeArrowFn:      [(v) => (_is.likeArrowFn(v) ? v : () => {}), () => {}],
     symbol:    [(v) => (_is.symbol(v) ? v : Symbol()), Symbol()],
     registeredSymbol: [(v) => (_is.registeredSymbol(v) ? v : Symbol.for('default')), Symbol.for('default')],
     null:      [() => null, null],
