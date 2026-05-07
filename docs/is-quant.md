@@ -47,24 +47,28 @@ Checks for the industry-standard formats used by NVIDIA, Google (TPU), and ARM h
 ## Custom Format Validation
 The library exposes internal logic to check any arbitrary floating-point configuration.
 
-### **`_genLUTSmall(width, expBits, manBits, bias, mode)`**
+#### **`_genLUTSmall(width, expBits, manBits, bias, mode)`**
 Generates a `Float32Array` lookup table (LUT) for formats ≤16 bits. This is the engine behind the high-speed `f4` through `f8` checks.
 
 | Parameter | Type | Description |
 | :--- | :--- | :--- |
 | `width` | `number` | Total bits (e.g., `8` for an 8-bit float). |
-| `expBits` | `number` | Width of the exponent field. |
-| `manBits` | `number` | Width of the mantissa field. |
+| `expBits` | `number` | Width of the exponent field (controls range). |
+| `manBits` | `number` | Width of the mantissa field (controls precision). |
 | `bias` | `number` | The exponent bias value. |
-| `mode` | `string` | NaN & Infinity encoding logic for the generated LUT format: `'ieee'`, `'nan_only'`, `'separate'`, `'none'`, or `'ocp'`. |
+| `mode` | `string` | `NaN` & `Infinity` encoding logic for the generated LUT format: `'ieee'`, `'nan_only'`, `'separate'`, `'none'`, or `'ocp'`. |
 
-**`_isBigQValid(value, format)`**  
-Validates if a number is representable in a format defined by custom bit allocations using `BigInt` precision. Ideal for formats >16 bits (like `bf16` or `tf32`) where a LUT would be memory-prohibitive. `value` is the input numeric value to be checked, and `format` is the config descriptor with the following available options:
+#### **`_isBigQValid(value, format)`**  
+Validates if a number is representable in a format defined by custom bit allocations using `BigInt` precision. Ideal for formats >16 bits (like `bf16` or `tf32`) where a LUT would be memory-prohibitive.
 
-- **`expBits`**: Number of bits for the exponent (controls range).
-- **`manBits`**: Number of bits for the mantissa (controls precision).
-- **`bias`**: The exponent offset (defaults to IEEE standard $2^{expBits-1} - 1$).
-- **`mode`**: How the function handles specific bit patterns for `NaN` or `Infinity`. Possible options are `ieee`, `nan_only`, `separate`, and `none`.
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `value` | `number \| bigint` | Input numeric value to be checked. |
+| `format` | `Object` | Config descriptor for the quantisation format. |
+| `format.expBits` | `number` | Number of bits for the exponent (controls range). |
+| `format.manBits` | `number` | Number of bits for the mantissa (controls precision). |
+| `format.bias` | `number` | The exponent offset (defaults to IEEE standard $2^{expBits-1} - 1$). |
+| `format.mode` | `string` | How the function handles specific bit patterns for `NaN` or `Infinity`. Possible options are `ieee`, `nan_only`, `separate`, and `none`. |
 
 ## Internal Performance Optimisations
 To ensure these checks don't slow down AI inference pipelines, the script utilises:
